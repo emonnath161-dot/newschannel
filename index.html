@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HINDUS-NEWS | Voice of Hinduism</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        :root {
+            --primary-blue: #1e3c72;
+            --blue-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            --red: #e12229;
+            --footer-bg: #f8fafc;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Hind Siliguri', sans-serif; }
+        body { background-color: #f1f5f9; color: #333; overflow-x: hidden; }
+        .container { max-width: 1300px; margin: 0 auto; padding: 0 15px; }
+        a { text-decoration: none; transition: 0.3s; }
+
+        /* --- ১. হেডার ও লোগো (রেসপন্সিভ) --- */
+        header { background: #fff; padding: 20px 0; border-bottom: 1px solid #ddd; }
+        .header-content { display: flex; align-items: center; gap: 20px; }
+        
+        .logo-area { width: 100px; height: 100px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center; background: #f9f9f9; border-radius: 10px; overflow: hidden; flex-shrink: 0; }
+        .logo-area img { width: 100%; height: 100%; object-fit: contain; }
+        
+        .site-name-area h1 { font-size: clamp(35px, 8vw, 65px); font-weight: 800; color: #000; line-height: 1; }
+        .site-name-area h1 span { color: var(--red); }
+        .site-name-area p { font-size: clamp(14px, 3vw, 22px); font-weight: 600; color: #555; margin-top: 5px; letter-spacing: 1px; }
+
+        /* --- ২. নেভিগেশন মেনু (মোবাইল ফ্রেন্ডলি স্ক্রল) --- */
+        nav { background: #fff; border-bottom: 4px solid var(--primary-blue); position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .nav-links { list-style: none; display: flex; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .nav-links::-webkit-scrollbar { display: none; }
+        .nav-links li a { display: block; padding: 15px 18px; font-weight: 700; color: #333; white-space: nowrap; font-size: 16px; }
+        .nav-links li a:hover, .nav-links li a.active { background: var(--blue-gradient); color: white; }
+
+        /* --- ৩. ব্রেকিং নিউজ --- */
+        .ticker-wrap { background: #fff; height: 50px; margin: 15px 0; border-radius: 50px; border: 1px solid #ddd; display: flex; align-items: center; overflow: hidden; }
+        .ticker-title { background: var(--primary-blue); color: #fff; padding: 0 20px; height: 100%; display: flex; align-items: center; font-weight: 700; font-size: 16px; white-space: nowrap; }
+        .ticker-content { flex: 1; overflow: hidden; position: relative; }
+        .ticker-text { display: inline-block; white-space: nowrap; animation: marquee 30s linear infinite; }
+        .ticker-text span { font-weight: 600; padding-right: 50px; font-size: 16px; }
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+
+        /* --- ৪. নিউজ গ্রিড (অটো লোড হবে) --- */
+        .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; margin: 30px 0; }
+        .news-card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s; }
+        .news-card:hover { transform: translateY(-5px); }
+        .news-card img { width: 100%; height: 200px; object-fit: cover; }
+        .news-card-content { padding: 15px; }
+        .news-card-content h3 { font-size: 20px; margin-bottom: 10px; line-height: 1.4; color: #1e293b; }
+        .news-tag { background: #f1f5f9; color: var(--primary-blue); padding: 4px 10px; border-radius: 5px; font-size: 12px; font-weight: 700; }
+
+        /* --- ৫. ভিডিও সেকশন (৮টি ভিডিও গ্রিড) --- */
+        .video-section { padding: 40px 0; background: #000; color: #fff; margin: 40px 0; border-radius: 15px; }
+        .video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .video-container { position: relative; width: 100%; padding-bottom: 56.25%; height: 0; border-radius: 10px; overflow: hidden; }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+
+        /* --- ৬. মতামত স্লাইডার --- */
+        .opinion-section { padding: 40px 0; }
+        .opinion-card { width: 260px !important; height: 340px; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .opinion-card img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* --- ৭. ফুটার (রেসপন্সিভ গ্রিড) --- */
+        .footer-top { background: var(--footer-bg); padding: 50px 0; border-top: 2px solid #e2e8f0; }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 40px; }
+        .footer-red-box { background: var(--red); color: #fff; padding: 40px 0; border-radius: 40px 40px 0 0; }
+        .red-box-content { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; text-align: center; }
+        .footer-bottom { background: #1a1a1a; color: #94a3b8; text-align: center; padding: 20px 0; font-size: 14px; }
+
+        /* মোবাইল স্পেশাল সেটিংস */
+        @media (max-width: 600px) {
+            .header-content { flex-direction: column; text-align: center; }
+            .logo-area { width: 80px; height: 80px; }
+            .news-grid { grid-template-columns: 1fr; }
+            .video-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container header-content">
+            <div class="logo-area" id="main-logo">
+                <i class="fas fa-image" style="font-size: 30px; color: #ccc;"></i>
+            </div>
+            <div class="site-name-area">
+                <h1>HINDUS <span>NEWS</span></h1>
+                <p>Voice of Hinduism</p>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+        <div class="container">
+            <ul class="nav-links">
+                <li><a href="#" class="active">প্রথম পাতা</a></li>
+                <li><a href="#">বাংলাদেশ</a></li>
+                <li><a href="#">জাতীয়</a></li>
+                <li><a href="#">আন্তর্জাতিক</a></li>
+                <li><a href="#">খেলা</a></li>
+                <li><a href="#">বিনোদন</a></li>
+                <li><a href="#">প্রযুক্তি ও চিকিৎসা</a></li>
+                <li><a href="#">মতামত</a></li>
+                <li><a href="#">সংগঠন</a></li>
+                <li><a href="#">শিক্ষা</a></li>
+                <li><a href="#">ধর্মতত্ব</a></li>
+                <li><a href="#">পূজাপার্বণ</a></li>
+                <li><a href="#">হিন্দু ফাউন্ডেশন</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="ticker-wrap">
+            <div class="ticker-title">শিরোনাম</div>
+            <div class="ticker-content" id="breaking-news-box">
+                <div class="ticker-text">
+                    <span>সংবাদ লোড হচ্ছে...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <main class="container">
+        <h2 style="border-left: 5px solid var(--primary-blue); padding-left: 15px; margin: 20px 0;">সর্বশেষ সংবাদ</h2>
+        <div class="news-grid" id="news-container">
+            <p style="text-align: center; grid-column: 1/-1;">তথ্য লোড হচ্ছে...</p>
+        </div>
+    </main>
+
+    <section class="container">
+        <div class="video-section">
+            <div class="container">
+                <h2 style="margin-bottom: 25px;"><i class="fab fa-youtube" style="color:red;"></i> ভিডিও গ্যালারি</h2>
+                <div class="video-grid" id="video-container">
+                    </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="opinion-section container">
+        <h2 style="margin-bottom: 25px;"><i class="fas fa-feather-alt"></i> মতামত</h2>
+        <div class="swiper opSwiper">
+            <div class="swiper-wrapper" id="opinion-container">
+                </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-top">
+            <div class="container footer-grid">
+                <div>
+                    <h2 style="font-size: 28px;">HINDUS NEWS</h2>
+                    <p style="margin-top: 10px; color: #64748b;">সংখ্যালঘু অধিকার ও সত্যের সন্ধানে।</p>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <a href="#">গোপনীয়তার নীতি</a>
+                    <a href="admin.html" style="opacity: 0.5;">অ্যাডমিন লগইন</a>
+                </div>
+                <div>
+                    <p>যোগাযোগ: news@hindus.news</p>
+                </div>
+            </div>
+        </div>
+        <div class="footer-red-box">
+            <div class="container red-box-content">
+                <div><h3>সম্পাদক: শুভ চন্দ্র দে</h3></div>
+                <div>
+                    <a href="#" style="color:white; font-size: 20px; margin: 0 10px;"><i class="fab fa-facebook"></i></a>
+                    <a href="#" style="color:white; font-size: 20px; margin: 0 10px;"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">স্বত্ব © HINDUS NEWS ২০২৬</div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script>
+        // ১. SUPABASE কানেকশন (এখানে আপনার ডাটা বসান)
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+        const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // ২. নিউজ লোড করার ফাংশন
+        async function fetchNews() {
+            const { data, error } = await supabaseClient
+                .from('news_portal')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (data) {
+                const container = document.getElementById('news-container');
+                container.innerHTML = data.map(news => `
+                    <div class="news-card">
+                        <img src="${news.image_url}" alt="News">
+                        <div class="news-card-content">
+                            <span class="news-tag">${news.category}</span>
+                            <h3>${news.title}</h3>
+                            <p style="font-size:14px; color:#64748b;">${news.description.substring(0, 100)}...</p>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // ব্রেকিং নিউজ আপডেট
+                const ticker = document.getElementById('breaking-news-box');
+                ticker.innerHTML = `<div class="ticker-text">${data.slice(0, 5).map(n => `<span><i class="fas fa-bolt"></i> ${n.title}</span>`).join('')}</div>`;
+            }
+        }
+
+        // ৩. ভিডিও লোড করার ফাংশন
+        async function fetchVideos() {
+            const { data } = await supabaseClient.from('videos').select('*').limit(8);
+            if (data) {
+                document.getElementById('video-container').innerHTML = data.map(v => `
+                    <div>
+                        <div class="video-container">
+                            <iframe src="${v.video_url}" allowfullscreen></iframe>
+                        </div>
+                        <p style="margin-top:8px; font-size:14px;">${v.caption}</p>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // ৪. মতামত লোড
+        async function fetchOpinions() {
+            const { data } = await supabaseClient.from('opinions').select('*');
+            if (data) {
+                document.getElementById('opinion-container').innerHTML = data.map(o => `
+                    <div class="swiper-slide opinion-card"><img src="${o.image_url}"></div>
+                `).join('');
+                
+                new Swiper(".opSwiper", {
+                    slidesPerView: "auto",
+                    spaceBetween: 20,
+                    loop: true,
+                    autoplay: { delay: 3000 }
+                });
+            }
+        }
+
+        // সব ডেটা লোড শুরু
+        window.onload = () => {
+            fetchNews();
+            fetchVideos();
+            fetchOpinions();
+        };
+    </script>
+</body>
+</html>
