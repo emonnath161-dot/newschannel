@@ -3,133 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ক্যাটাগরি নিউজ | Adi Sonaton TV</title>
-    
+    <title>বিভাগ অনুযায়ী সংবাদ | Adi Sonaton TV</title>
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <style>
-        :root { --primary-blue: #1e3c72; --red: #e12229; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Hind Siliguri', sans-serif; }
-        body { background: #f1f5f9; color: #333; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
-        
-        /* হেডার */
-        header { background: #fff; padding: 20px 0; border-bottom: 4px solid var(--primary-blue); box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 30px; }
-        .header-content { display: flex; align-items: center; justify-content: space-between; }
-        .logo-text { font-size: 24px; font-weight: 800; color: #000; text-decoration: none; }
-        .logo-text span { color: var(--red); }
-
-        /* বিভাগ টাইটেল */
-        .cat-header { background: #fff; padding: 20px; border-radius: 10px; margin-bottom: 30px; border-left: 8px solid var(--primary-blue); }
-        .cat-title { font-size: clamp(24px, 5vw, 32px); color: var(--primary-blue); }
-        .back-btn { display: inline-block; margin-bottom: 15px; color: #666; text-decoration: none; font-size: 14px; transition: 0.3s; }
-        .back-btn:hover { color: var(--red); }
-
-        /* নিউজ গ্রিড */
-        .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
-        .news-card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s; border: 1px solid #eee; }
-        .news-card:hover { transform: translateY(-5px); }
-        .news-card img { width: 100%; height: 200px; object-fit: cover; background: #eee; }
-        .news-body { padding: 15px; }
-        .news-body h3 { font-size: 19px; line-height: 1.4; margin-bottom: 10px; color: #1e293b; }
-        .news-body p { font-size: 14px; color: #64748b; line-height: 1.6; }
-
-        /* লোডার ও এরর মেসেজ */
-        .status-msg { text-align: center; padding: 50px; font-size: 18px; color: #666; grid-column: 1/-1; }
-        
-        @media (max-width: 600px) { .news-grid { grid-template-columns: 1fr; } }
+        body { font-family: 'Hind Siliguri', sans-serif; background: #f4f7f9; margin: 0; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+        .cat-header { background: white; padding: 20px; border-left: 10px solid #1e3c72; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .cat-title { font-size: 32px; color: #1e3c72; margin: 0; }
+        .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .news-card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .news-card img { width: 100%; height: 200px; object-fit: cover; }
+        .news-card-content { padding: 15px; }
+        .status-msg { text-align: center; font-size: 20px; color: #666; padding: 100px 0; }
+        .back-link { text-decoration: none; color: #1e3c72; font-weight: bold; display: block; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="container header-content">
-            <a href="index.html" class="logo-text">Adi Sonaton <span>TV</span></a>
-            <div style="font-size: 14px; font-weight: 600; color: #666;">সত্যের সন্ধানে</div>
-        </div>
-    </header>
-
-    <div class="container">
-        <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> হোমপেজে ফিরে যান</a>
-        
-        <div class="cat-header">
-            <h2 class="cat-title" id="display-cat-name">বিভাগ লোড হচ্ছে...</h2>
-        </div>
-        
-        <div class="news-grid" id="news-list">
-            <div class="status-msg">সংবাদ খোঁজা হচ্ছে...</div>
-        </div>
+<div class="container">
+    <a href="index.html" class="back-link">← হোমপেজে ফিরে যান</a>
+    
+    <div class="cat-header">
+        <h2 class="cat-title" id="display-name">বিভাগ লোড হচ্ছে...</h2>
     </div>
 
-    <script>
-        // ১. আপনার SUPABASE তথ্য এখানে বসান
-        const SUPABASE_URL = 'https://vplqtnrziptqeeusdabv.supabase.co'; 
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwbHF0bnJ6aXB0cWVldXNkYWJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwNDU1NDIsImV4cCI6MjA4NjYyMTU0Mn0.yMs0N0dMIImliu6PscOeKh_gYlvl184AESug-LVDKok';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    <div id="news-container" class="news-grid">
+        <div class="status-msg">সংবাদ খোঁজা হচ্ছে...</div>
+    </div>
+</div>
 
-        // ২. ইংরেজি নামকে বাংলায় দেখানোর তালিকা (Mapping)
-        const catMapping = {
-            'bangladesh': 'বাংলাদেশ',
-            'national': 'জাতীয়',
-            'international': 'আন্তর্জাতিক',
-            'sports': 'খেলা',
-            'entertainment': 'বিনোদন',
-            'tech-health': 'প্রযুক্তি ও চিকিৎসা',
-            'opinion': 'মতামত',
-            'organization': 'সংগঠন',
-            'education': 'শিক্ষা',
-            'theology': 'ধর্মতত্ব',
-            'festivals': 'পূজাপার্বণ',
-            'foundation': 'হিন্দু ফাউন্ডেশন'
-        };
+<script>
+    // ১. আপনার সঠিক Supabase তথ্য এখানে দিন
+    const SUPABASE_URL = 'https://vplqtnrziptqeeusdabv.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwbHF0bnJ6aXB0cWVldXNkYWJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwNDU1NDIsImV4cCI6MjA4NjYyMTU0Mn0.yMs0N0dMIImliu6PscOeKh_gYlvl184AESug-LVDKok';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // ৩. URL থেকে ক্যাটাগরি বের করা
-        const params = new URLSearchParams(window.location.search);
-        const catQuery = params.get('page'); // যেমন: tech-health পাবে
+    // ২. ম্যাপিং: ইংরেজি URL নাম থেকে বাংলায় রূপান্তর
+    const categoryMap = {
+        'bangladesh': 'বাংলাদেশ',
+        'national': 'জাতীয়',
+        'international': 'আন্তর্জাতিক',
+        'sports': 'খেলা',
+        'entertainment': 'বিনোদন',
+        'tech-health': 'প্রযুক্তি ও চিকিৎসা',
+        'opinion': 'মতামত',
+        'organization': 'সংগঠন',
+        'education': 'শিক্ষা',
+        'theology': 'ধর্মতত্ব',
+        'festivals': 'পূজাপার্বণ',
+        'foundation': 'হিন্দু ফাউন্ডেশন'
+    };
 
-        async function loadNews() {
-            if (!catQuery) {
-                document.getElementById('news-list').innerHTML = '<div class="status-msg">কোনো বিভাগ পাওয়া যায়নি।</div>';
-                return;
-            }
+    // ৩. URL থেকে ক্যাটাগরি নেওয়া
+    const urlParams = new URLSearchParams(window.location.search);
+    const catParam = urlParams.get('page'); // যেমন: theology
 
-            // স্ক্রিনে বাংলা নাম সেট করা
-            const banglaName = catMapping[catQuery] || catQuery;
-            document.getElementById('display-cat-name').innerText = "বিভাগ: " + banglaName;
+    async function fetchCategoryNews() {
+        // স্ক্রিনে নাম দেখানো (ম্যাপ থেকে বাংলা নাম নিবে)
+        const banglaName = categoryMap[catParam] || catParam;
+        document.getElementById('display-name').innerText = "বিভাগ: " + banglaName;
 
-            // ৪. সুপাবেস থেকে ডাটা আনা (যেখানে ক্যাটাগরি ম্যাচ করবে)
-            // এখানে .eq('category', ...) এ 'banglaName' ব্যবহার করা হয়েছে কারণ আপনার এডমিন প্যানেল থেকে বাংলায় নাম সেভ হচ্ছে
-            const { data, error } = await supabase
-                .from('news_portal')
-                .select('*')
-                .eq('category', banglaName) 
-                .order('created_at', { ascending: false });
+        // ৪. ডাটাবেজ থেকে ডাটা আনা (যেখানে ক্যাটাগরি একদম হুবহু মিলবে)
+        const { data, error } = await supabaseClient
+            .from('news_portal')
+            .select('*')
+            .eq('category', banglaName) // এডমিন প্যানেলে আপনি বাংলায় সেভ করছেন, তাই এখানেও বাংলায় খুঁজবে
+            .order('id', { ascending: false });
 
-            const listContainer = document.getElementById('news-list');
+        const container = document.getElementById('news-container');
 
-            if (error) {
-                listContainer.innerHTML = '<div class="status-msg">ডাটা লোড করতে সমস্যা হয়েছে।</div>';
-                console.error(error);
-            } else if (data.length === 0) {
-                listContainer.innerHTML = '<div class="status-msg">এই বিভাগে বর্তমানে কোনো সংবাদ নেই।</div>';
-            } else {
-                listContainer.innerHTML = data.map(item => `
-                    <div class="news-card">
-                        <img src="${item.image_url || 'https://via.placeholder.com/400x200'}" alt="News">
-                        <div class="news-body">
-                            <h3>${item.title}</h3>
-                            <p>${item.description ? item.description.substring(0, 120) : ''}...</p>
-                        </div>
-                    </div>
-                `).join('');
-            }
+        if (error) {
+            container.innerHTML = '<div class="status-msg">এরর: ডাটা লোড করা যায়নি।</div>';
+            return;
         }
 
-        // পেজ লোড হলে ফাংশনটি চলবে
-        loadNews();
-    </script>
+        if (data && data.length > 0) {
+            container.innerHTML = data.map(news => `
+                <div class="news-card">
+                    <img src="${news.image_url}" alt="">
+                    <div class="news-card-content">
+                        <h3 style="margin:0 0 10px 0; font-size:18px;">${news.title}</h3>
+                        <p style="font-size:14px; color:#555;">${news.description ? news.description.substring(0, 100) : ''}...</p>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = `<div class="status-msg">"${banglaName}" বিভাগে বর্তমানে কোনো নিউজ নেই।</div>`;
+        }
+    }
+
+    fetchCategoryNews();
+</script>
+
 </body>
 </html>
