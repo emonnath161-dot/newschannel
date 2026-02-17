@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ক্যাটাগরি নিউজ | HINDUS-NEWS</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        :root { --primary-blue: #1e3c72; --red: #e12229; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Hind Siliguri', sans-serif; }
+        body { background: #f1f5f9; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        
+        header { background: #fff; padding: 15px 0; border-bottom: 3px solid var(--primary-blue); text-align: center; margin-bottom: 20px; }
+        .cat-title { font-size: 30px; color: var(--primary-blue); margin-bottom: 20px; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
+        
+        .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .news-card { background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .news-card img { width: 100%; height: 200px; object-fit: cover; }
+        .news-content { padding: 15px; }
+        .news-content h3 { font-size: 18px; margin-bottom: 10px; line-height: 1.5; }
+        .no-news { text-align: center; padding: 50px; font-size: 20px; color: #64748b; }
+        
+        .back-home { display: inline-block; margin-bottom: 20px; color: var(--primary-blue); font-weight: bold; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>HINDUS <span style="color:var(--red)">NEWS</span></h1>
+    </header>
+
+    <div class="container">
+        <a href="index.html" class="back-home"><i class="fas fa-arrow-left"></i> হোমপেজে ফিরে যান</a>
+        
+        <h2 class="cat-title" id="category-display-name">লোড হচ্ছে...</h2>
+        
+        <div class="news-grid" id="category-news-container">
+            </div>
+    </div>
+
+    <script>
+        // ১. আপনার সুপাবেস কানেকশন
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwbHF0bnJ6aXB0cWVldXNkYWJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwNDU1NDIsImV4cCI6MjA4NjYyMTU0Mn0.yMs0N0dMIImliu6PscOeKh_gYlvl184AESug-LVDKok';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // ২. URL থেকে ক্যাটাগরির নাম নেওয়া
+        const urlParams = new URLSearchParams(window.location.search);
+        const catName = urlParams.get('page'); // যেমন: bangladesh
+
+        // ৩. ক্যাটাগরি অনুযায়ী নিউজ লোড করা
+        async function loadCategoryNews() {
+            if (!catName) return;
+
+            // ডিসপ্লে নাম ঠিক করা
+            document.getElementById('category-display-name').innerText = "বিভাগ: " + catName.toUpperCase();
+
+            const { data, error } = await supabaseClient
+                .from('news_portal')
+                .select('*')
+                .eq('category', catName) // ডাটাবেজের ক্যাটাগরি কলামের সাথে চেক করবে
+                .order('id', { ascending: false });
+
+            const container = document.getElementById('category-news-container');
+
+            if (data && data.length > 0) {
+                container.innerHTML = data.map(news => `
+                    <div class="news-card">
+                        <img src="${news.image_url}" alt="">
+                        <div class="news-content">
+                            <h3>${news.title}</h3>
+                            <p style="color:#666; font-size:14px;">${news.description.substring(0, 120)}...</p>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = `<p class="no-news">এই বিভাগে বর্তমানে কোনো সংবাদ নেই।</p>`;
+            }
+        }
+
+        loadCategoryNews();
+    </script>
+</body>
+</html>
