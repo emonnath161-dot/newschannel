@@ -200,7 +200,9 @@
 
     // ২. নিউজ লোড করার ফাংশন
     async function fetchNews() {
-        const container = document.getElementById('news-container'); // নিশ্চিত করুন আপনার HTML-এ এই ID টি আছে
+        // ID গুলো খুঁজে বের করা
+        const container = document.getElementById('news-container'); 
+        const ticker = document.getElementById('breaking-news-box');
         
         const { data, error } = await supabaseClient
             .from('news_portal')
@@ -209,33 +211,34 @@
 
         if (error) {
             console.error('Error fetching news:', error);
-            if(container) container.innerHTML = "তথ্য লোড করতে সমস্যা হয়েছে।";
+            if(container) container.innerHTML = "তথ্য লোড করতে সমস্যা হয়েছে।";
             return;
         }
 
-        if (data && container) {
-            // মূল নিউজ সেকশন আপডেট
-            container.innerHTML = data.map(news => `
-                <div class="news-card">
-                    <a href="news-details.html?id=${news.id}">
-                        <img src="${news.image_url || 'https://via.placeholder.com/400x200'}" alt="News">
-                    </a>
-                    <div class="news-card-content">
-                        <span class="news-tag">${news.category}</span>
-                        
-                        <a href="news-details.html?id=${news.id}" style="text-decoration:none; color:inherit;">
-                            <h3 style="cursor:pointer; margin-top:10px; transition: 0.2s;">${news.title}</h3>
+        if (data) {
+            // মূল নিউজ সেকশন আপডেট (হোমপেজ নিউজ কার্ড)
+            if (container) {
+                container.innerHTML = data.map(news => `
+                    <div class="news-card">
+                        <a href="news-details.html?id=${news.id}">
+                            <img src="${news.image_url || 'https://via.placeholder.com/400x200'}" alt="News">
                         </a>
-                        
-                        <p style="font-size:14px; color:#64748b; margin-top:10px;">
-                            ${news.description ? news.description.substring(0, 100) : ''}...
-                        </p>
+                        <div class="news-card-content">
+                            <span class="news-tag">${news.category}</span>
+                            
+                            <a href="news-details.html?id=${news.id}" style="text-decoration:none; color:inherit;">
+                                <h3 style="cursor:pointer; margin-top:10px; transition: 0.2s;">${news.title}</h3>
+                            </a>
+                            
+                            <p style="font-size:14px; color:#64748b; margin-top:10px;">
+                                ${news.description ? news.description.substring(0, 100) : ''}...
+                            </p>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `).join('');
+            }
             
-            // ৩. ব্রেকিং নিউজ আপডেট (লিঙ্ক সহ)
-            const ticker = document.getElementById('breaking-news-box');
+            // ৩. ব্রেকিং নিউজ আপডেট (Ticker লিঙ্ক সহ)
             if (ticker) {
                 ticker.innerHTML = `
                     <div class="ticker-text">
@@ -278,26 +281,29 @@
                 </div>
             `).join('');
             
-            // Swiper স্লাইডার সক্রিয় করা
-            new Swiper(".opSwiper", {
-                slidesPerView: "auto",
-                spaceBetween: 20,
-                loop: true,
-                autoplay: { delay: 3000 }
-            });
+            // Swiper স্লাইডার সক্রিয় করা
+            if (typeof Swiper !== 'undefined') {
+                new Swiper(".opSwiper", {
+                    slidesPerView: "auto",
+                    spaceBetween: 20,
+                    loop: true,
+                    autoplay: { delay: 3000 }
+                });
+            }
         }
     }
 
     // ৬. সব ডেটা লোড শুরু
-    window.onload = () => {
+    window.addEventListener('DOMContentLoaded', () => {
         fetchNews();
         fetchVideos();
         fetchOpinions();
-    };
+    });
 </script>
 </body>
 
 </html>
+
 
 
 
