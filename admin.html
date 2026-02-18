@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adi Sonaton TV | Admin Dashboard</title>
+    <title>Adi Sonaton TV | Master Admin</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -15,97 +15,121 @@
             --primary: #2563eb;
             --danger: #dc2626;
             --success: #16a34a;
-            --bg: #f8fafc;
+            --bg: #f1f5f9;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Hind Siliguri', sans-serif; }
         body { background: var(--bg); display: flex; min-height: 100vh; }
 
+        /* Login Overlay */
+        #login-overlay { position: fixed; inset: 0; background: #0f172a; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .login-card { background: white; padding: 40px; border-radius: 15px; width: 350px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+
         /* Sidebar */
         .sidebar { width: 280px; background: var(--sidebar-color); color: white; height: 100vh; position: fixed; padding: 30px 20px; }
-        .sidebar h2 { color: var(--primary); margin-bottom: 35px; text-align: center; }
-        .nav-btn { width: 100%; padding: 15px; margin-bottom: 10px; border: none; background: transparent; color: #94a3b8; text-align: left; border-radius: 10px; cursor: pointer; font-size: 16px; transition: 0.3s; }
-        .nav-btn i { margin-right: 12px; }
+        .sidebar h2 { color: var(--primary); margin-bottom: 40px; text-align: center; font-size: 24px; }
+        .nav-btn { width: 100%; padding: 15px; margin-bottom: 10px; border: none; background: transparent; color: #94a3b8; text-align: left; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: 600; transition: 0.3s; }
+        .nav-btn i { margin-right: 12px; width: 20px; }
         .nav-btn:hover, .nav-btn.active { background: #1e293b; color: white; }
         .nav-btn.active { border-left: 4px solid var(--primary); }
 
-        /* Main Area */
+        /* Main Content */
         .main-content { margin-left: 280px; width: calc(100% - 280px); padding: 40px; }
-        .section { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); display: none; }
-        .section.active { display: block; }
+        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .section { display: none; }
+        .section.active { display: block; animation: fadeIn 0.4s ease; }
 
-        /* Form */
-        label { display: block; margin-bottom: 8px; font-weight: 600; color: #334155; }
-        input, select, textarea { width: 100%; padding: 12px; margin-bottom: 20px; border: 1.5px solid #e2e8f0; border-radius: 8px; outline: none; }
-        .btn-save { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 8px; width: 100%; font-size: 18px; font-weight: 700; cursor: pointer; }
-        .btn-save:hover { background: #1d4ed8; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Preview Table */
-        .dashboard-preview { margin-top: 40px; }
-        .preview-card { background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
-        .preview-card img { width: 80px; height: 50px; object-fit: cover; border-radius: 5px; margin-right: 15px; }
-        .del-btn { color: var(--danger); cursor: pointer; font-size: 18px; border: none; background: none; }
+        /* Forms */
+        label { display: block; margin-bottom: 8px; font-weight: 700; color: #334155; }
+        input, select, textarea { width: 100%; padding: 12px; margin-bottom: 20px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 15px; outline: none; }
+        input:focus { border-color: var(--primary); }
+        .btn-submit { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; font-size: 18px; font-weight: 700; cursor: pointer; transition: 0.3s; }
+        .btn-submit:hover { background: #1d4ed8; transform: translateY(-2px); }
 
-        /* Extra Content Row */
-        .extra-row { background: #f1f5f9; padding: 15px; border-radius: 8px; margin-bottom: 15px; position: relative; }
+        /* Preview List */
+        .preview-box { margin-top: 20px; border-top: 2px solid #e2e8f0; padding-top: 20px; }
+        .list-item { display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; }
+        .list-item img { width: 70px; height: 45px; object-fit: cover; border-radius: 6px; margin-right: 15px; }
+        .del-btn { color: var(--danger); cursor: pointer; font-size: 20px; border: none; background: none; }
     </style>
 </head>
 <body>
 
+<div id="login-overlay">
+    <div class="login-card">
+        <i class="fas fa-lock" style="font-size: 40px; color: var(--primary); margin-bottom: 15px;"></i>
+        <h2>অ্যাডমিন লগইন</h2><br>
+        <input type="password" id="admin-pass" placeholder="পাসওয়ার্ড দিন">
+        <button class="btn-submit" onclick="verifyLogin()">ড্যাশবোর্ডে প্রবেশ করুন</button>
+    </div>
+</div>
+
 <div class="sidebar">
-    <h2>Sonaton TV</h2>
-    <button class="nav-btn active" onclick="showTab('news-tab', this)"><i class="fas fa-newspaper"></i> নিউজ আপলোড</button>
-    <button class="nav-btn" onclick="showTab('video-tab', this)"><i class="fas fa-video"></i> ভিডিও গ্যালারি</button>
-    <button class="nav-btn" onclick="showTab('opinion-tab', this)"><i class="fas fa-feather"></i> মতামত স্লাইডার</button>
-    <button class="nav-btn" onclick="window.location.href='index.html'" style="margin-top: 50px;"><i class="fas fa-home"></i> হোমপেজে যান</button>
+    <h2>Adi Sonaton</h2>
+    <button class="nav-btn active" onclick="switchTab('news-tab', this)"><i class="fas fa-newspaper"></i> সংবাদ পোস্ট</button>
+    <button class="nav-btn" onclick="switchTab('video-tab', this)"><i class="fas fa-play-circle"></i> ভিডিও গ্যালারি</button>
+    <button class="nav-btn" onclick="switchTab('opinion-tab', this)"><i class="fas fa-user-edit"></i> মতামত স্লাইডার</button>
+    <button class="nav-btn" onclick="window.location.href='index.html'" style="margin-top: 60px;"><i class="fas fa-home"></i> হোমপেজে যান</button>
 </div>
 
 <div class="main-content">
     
     <div id="news-tab" class="section active">
-        <h3>📰 নতুন সংবাদ পোস্ট করুন</h3><br>
-        <label>শিরোনাম</label>
-        <input type="text" id="n-title">
-        <label>ক্যাটাগরি</label>
-        <select id="n-cat">
-            <option value="bangladesh">বাংলাদেশ</option>
-            <option value="national">জাতীয়</option>
-            <option value="international">আন্তর্জাতিক</option>
-            <option value="sports">খেলা</option>
-            <option value="entertainment">বিনোদন</option>
-            <option value="opinion">মতামত</option>
-            <option value="theology">ধর্মতত্ব</option>
-            <option value="foundation">হিন্দু ফাউন্ডেশন</option>
-        </select>
-        <label>প্রধান ছবি (URL)</label>
-        <input type="text" id="n-img">
-        <label>সংবাদ বর্ণনা</label>
-        <textarea id="n-body" rows="5"></textarea>
+        <div class="card">
+            <h2>📰 নতুন সংবাদ আপলোড করুন</h2><br>
+            <label>শিরোনাম</label>
+            <input type="text" id="n-title" placeholder="সংবাদের শিরোনাম লিখুন">
 
-        <div id="extra-fields"></div>
-        <button onclick="addExtra()" style="background:#10b981; color:white; padding:8px 15px; border:none; border-radius:5px; cursor:pointer; margin-bottom:20px;">+ আরো ছবি ও বর্ণনা</button>
+            <label>ক্যাটাগরি সিলেক্ট করুন (ড্রপডাউন)</label>
+            <select id="n-cat">
+                <option value="bangladesh">বাংলাদেশ</option>
+                <option value="national">জাতীয়</option>
+                <option value="international">আন্তর্জাতিক</option>
+                <option value="sports">খেলা</option>
+                <option value="entertainment">বিনোদন</option>
+                <option value="theology">ধর্মতত্ব</option>
+                <option value="opinion">মতামত</option>
+                <option value="tech">প্রযুক্তি</option>
+                <option value="festivals">পূজাপার্বণ</option>
+                <option value="foundation">হিন্দু ফাউন্ডেশন</option>
+                <option value="organization">সংগঠন</option>
+                <option value="education">শিক্ষা</option>
+            </select>
 
-        <button class="btn-save" onclick="saveNews()">সংবাদ প্রকাশ করুন</button>
-        
-        <div class="dashboard-preview">
-            <h4>বর্তমান পোস্টসমূহ (প্রিভিউ)</h4><br>
-            <div id="news-list-dashboard">লোড হচ্ছে...</div>
+            <label>ছবির লিঙ্ক (URL)</label>
+            <input type="text" id="n-img" placeholder="https://example.com/photo.jpg">
+
+            <label>বিস্তারিত সংবাদ বর্ণনা</label>
+            <textarea id="n-body" rows="6" placeholder="সংবাদের বিস্তারিত এখানে লিখুন..."></textarea>
+
+            <button class="btn-submit" id="save-news-btn" onclick="submitNews()">সংবাদ প্রকাশ করুন</button>
+        </div>
+
+        <div class="preview-box">
+            <h3>সাম্প্রতিক সংবাদসমূহ (প্রিভিউ)</h3><br>
+            <div id="news-preview-list">লোড হচ্ছে...</div>
         </div>
     </div>
 
     <div id="video-tab" class="section">
-        <h3>🎥 ভিডিও আপলোড</h3><br>
-        <input type="text" id="v-url" placeholder="YouTube Embed URL">
-        <input type="text" id="v-title" placeholder="ভিডিও শিরোনাম">
-        <button class="btn-save" onclick="saveVideo()">ভিডিও সেভ করুন</button>
-        <div id="video-list-dashboard" class="dashboard-preview"></div>
+        <div class="card">
+            <h2>🎥 ভিডিও গ্যালারি ম্যানেজমেন্ট</h2><br>
+            <input type="text" id="v-url" placeholder="YouTube Embed URL (src)">
+            <input type="text" id="v-title" placeholder="ভিডিওর শিরোনাম">
+            <button class="btn-submit" onclick="submitVideo()">ভিডিও সেভ করুন</button>
+        </div>
+        <div id="video-preview-list" class="preview-box"></div>
     </div>
 
     <div id="opinion-tab" class="section">
-        <h3>✍️ মতামত স্লাইডার ইমেজ</h3><br>
-        <input type="text" id="o-url" placeholder="ছবির লিঙ্ক (URL)">
-        <button class="btn-save" onclick="saveOpinion()">স্লাইডারে যোগ করুন</button>
-        <div id="opinion-list-dashboard" class="dashboard-preview"></div>
+        <div class="card">
+            <h2>✍️ মতামত স্লাইডার ইমেজ</h2><br>
+            <input type="text" id="o-img" placeholder="ছবির লিঙ্ক দিন (URL)">
+            <button class="btn-submit" onclick="submitOpinion()">স্লাইডারে যুক্ত করুন</button>
+        </div>
+        <div id="opinion-preview-list" class="preview-box"></div>
     </div>
 
 </div>
@@ -115,97 +139,105 @@
     const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwbHF0bnJ6aXB0cWVldXNkYWJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwNDU1NDIsImV4cCI6MjA4NjYyMTU0Mn0.yMs0N0dMIImliu6PscOeKh_gYlvl184AESug-LVDKok';
     const supabaseClient = supabase.createClient(S_URL, S_KEY);
 
-    // ট্যাব পাল্টানো
-    function showTab(id, btn) {
+    // পাসওয়ার্ড ভেরিফিকেশন
+    function verifyLogin() {
+        const p = document.getElementById('admin-pass').value;
+        if(p === "sonaton2026") {
+            document.getElementById('login-overlay').style.display = 'none';
+        } else { alert("ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।"); }
+    }
+
+    // ট্যাব সুইচিং
+    function switchTab(id, btn) {
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         btn.classList.add('active');
-        if(id === 'news-tab') loadNews();
-        if(id === 'video-tab') loadVideos();
-        if(id === 'opinion-tab') loadOpinions();
+        if(id === 'news-tab') fetchNews();
+        if(id === 'video-tab') fetchVideos();
+        if(id === 'opinion-tab') fetchOpinions();
     }
 
-    // অতিরিক্ত ফিল্ড
-    function addExtra() {
-        const div = document.createElement('div');
-        div.className = 'extra-row';
-        div.innerHTML = `<input type="text" class="ex-i" placeholder="অতিরিক্ত ছবি"><textarea class="ex-d" placeholder="অতিরিক্ত বর্ণনা"></textarea><button onclick="this.parentElement.remove()" style="color:red; border:none; background:none; cursor:pointer;">মুছে ফেলুন</button>`;
-        document.getElementById('extra-fields').appendChild(div);
-    }
-
-    // নিউজ সেভ করা
-    async function saveNews() {
+    // সংবাদ সেভ ফাংশন (কলাম এরর ফিক্সড)
+    async function submitNews() {
+        const btn = document.getElementById('save-news-btn');
         const title = document.getElementById('n-title').value;
         const cat = document.getElementById('n-cat').value;
         const img = document.getElementById('n-img').value;
         const body = document.getElementById('n-body').value;
-        const exI = Array.from(document.querySelectorAll('.ex-i')).map(i => i.value);
-        const exD = Array.from(document.querySelectorAll('.ex-d')).map(d => d.value);
 
-        if(!title || !img) return alert("তথ্য দিন");
+        if(!title || !img || !body) return alert("সবগুলো ঘর পূরণ করুন!");
 
-        const { error } = await supabaseClient.from('news_portal').insert([{ 
-            title: title, category: cat, image_url: img, content: body, 
-            extra_images: exI, extra_descriptions: exD 
+        btn.disabled = true; btn.innerText = "সেভ হচ্ছে...";
+
+        // আপনার ডাটাবেজে যদি 'content' এরর দেয়, তবে নিচে 'content' এর জায়গায় 'description' লিখে ট্রাই করুন।
+        const { error } = await supabaseClient.from('news_portal').insert([{
+            title: title, 
+            category: cat, 
+            image_url: img, 
+            content: body 
         }]);
 
-        if(!error) { alert("পোস্ট সফল হয়েছে!"); loadNews(); }
-        else { alert("Error: " + error.message); }
+        if(!error) { 
+            alert("সংবাদটি সফলভাবে সেভ হয়েছে এবং ওয়েবসাইটে শো করবে।"); 
+            location.reload(); 
+        } else { 
+            alert("Error: " + error.message); 
+            console.log(error);
+        }
+        btn.disabled = false; btn.innerText = "সংবাদ প্রকাশ করুন";
     }
 
-    // নিউজ লোড (ড্যাশবোর্ড প্রিভিউ)
-    async function loadNews() {
+    // প্রিভিউ লোড ফাংশন
+    async function fetchNews() {
         const { data } = await supabaseClient.from('news_portal').select('*').order('id', {ascending: false});
-        const box = document.getElementById('news-list-dashboard');
+        const box = document.getElementById('news-preview-list');
         if(data) {
             box.innerHTML = data.map(n => `
-                <div class="preview-card">
+                <div class="list-item">
                     <div style="display:flex; align-items:center;"><img src="${n.image_url}"> <b>${n.title}</b></div>
-                    <button class="del-btn" onclick="deleteData('news_portal', ${n.id})"><i class="fas fa-trash"></i></button>
+                    <button class="del-btn" onclick="delItem('news_portal', ${n.id})"><i class="fas fa-trash-alt"></i></button>
                 </div>
             `).join('');
         }
     }
 
-    // ভিডিও সেভ
-    async function saveVideo() {
-        const url = document.getElementById('v-url').value;
-        const title = document.getElementById('v-title').value;
-        await supabaseClient.from('videos').insert([{ video_url: url, caption: title }]);
-        alert("ভিডিও সেভ হয়েছে"); loadVideos();
+    async function submitVideo() {
+        const u = document.getElementById('v-url').value;
+        const t = document.getElementById('v-title').value;
+        const { error } = await supabaseClient.from('videos').insert([{ video_url: u, caption: t }]);
+        if(!error) { alert("ভিডিও সেভ হয়েছে!"); fetchVideos(); }
     }
 
-    async function loadVideos() {
+    async function fetchVideos() {
         const { data } = await supabaseClient.from('videos').select('*');
-        document.getElementById('video-list-dashboard').innerHTML = data.map(v => `
-            <div class="preview-card"><span>${v.caption}</span> <button class="del-btn" onclick="deleteData('videos', ${v.id})"><i class="fas fa-trash"></i></button></div>
+        document.getElementById('video-preview-list').innerHTML = data.map(v => `
+            <div class="list-item"><span>${v.caption}</span> <button class="del-btn" onclick="delItem('videos', ${v.id})"><i class="fas fa-trash-alt"></i></button></div>
         `).join('');
     }
 
-    // মতামত সেভ
-    async function saveOpinion() {
-        const url = document.getElementById('o-url').value;
-        await supabaseClient.from('opinions').insert([{ image_url: url }]);
-        alert("মতামত সেভ হয়েছে"); loadOpinions();
+    async function submitOpinion() {
+        const i = document.getElementById('o-img').value;
+        const { error } = await supabaseClient.from('opinions').insert([{ image_url: i }]);
+        if(!error) { alert("মতামত ইমেজ সেভ হয়েছে!"); fetchOpinions(); }
     }
 
-    async function loadOpinions() {
+    async function fetchOpinions() {
         const { data } = await supabaseClient.from('opinions').select('*');
-        document.getElementById('opinion-list-dashboard').innerHTML = data.map(o => `
-            <div class="preview-card"><img src="${o.image_url}"> <button class="del-btn" onclick="deleteData('opinions', ${o.id})"><i class="fas fa-trash"></i></button></div>
+        document.getElementById('opinion-preview-list').innerHTML = data.map(o => `
+            <div class="list-item"><img src="${o.image_url}"> <button class="del-btn" onclick="delItem('opinions', ${o.id})"><i class="fas fa-trash-alt"></i></button></div>
         `).join('');
     }
 
     // ডিলিট ফাংশন
-    async function deleteData(table, id) {
-        if(confirm("মুছে ফেলবেন?")) {
+    async function delItem(table, id) {
+        if(confirm("আপনি কি নিশ্চিত এটি মুছে ফেলতে চান? এটি ওয়েবসাইট থেকেও মুছে যাবে।")) {
             await supabaseClient.from(table).delete().eq('id', id);
             location.reload();
         }
     }
 
-    window.onload = loadNews;
+    window.onload = fetchNews;
 </script>
 </body>
 </html>
