@@ -192,87 +192,113 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script>
-        // ১. SUPABASE কানেকশন (এখানে আপনার ডাটা বসান)
-        const SUPABASE_URL = 'https://vplqtnrziptqeeusdabv.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwbHF0bnJ6aXB0cWVldXNkYWJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwNDU1NDIsImV4cCI6MjA4NjYyMTU0Mn0.yMs0N0dMIImliu6PscOeKh_gYlvl184AESug-LVDKok';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+   <script>
+    // ১. SUPABASE কানেকশন
+    const SUPABASE_URL = 'https://vplqtnrziptqeeusdabv.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwbHF0bnJ6aXB0cWVldXNkYWJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwNDU1NDIsImV4cCI6MjA4NjYyMTU0Mn0.yMs0N0dMIImliu6PscOeKh_gYlvl184AESug-LVDKok';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // ২. নিউজ লোড করার ফাংশন
-        async function fetchNews() {
-            const { data, error } = await supabaseClient
-                .from('news_portal')
-                .select('*')
-                .order('created_at', { ascending: false });
+    // ২. নিউজ লোড করার ফাংশন
+    async function fetchNews() {
+        const container = document.getElementById('news-container'); // নিশ্চিত করুন আপনার HTML-এ এই ID টি আছে
+        
+        const { data, error } = await supabaseClient
+            .from('news_portal')
+            .select('*')
+            .order('created_at', { ascending: false });
 
-            if (data) {
-container.innerHTML = data.map(news => `
-    <div class="news-card">
-        <a href="news-details.html?id=${news.id}">
-            <img src="${news.image_url}" alt="News">
-        </a>
-        <div class="news-card-content">
-            <span class="news-tag">${news.category}</span>
-            
-            <a href="news-details.html?id=${news.id}" style="text-decoration:none; color:inherit;">
-                <h3 style="cursor:pointer; margin-top:10px;">${news.title}</h3>
-            </a>
-            
-            <p style="font-size:14px; color:#64748b;">
-                ${news.description ? news.description.substring(0, 100) : ''}...
-            </p>
-        </div>
-    </div>
-`).join('');
-                
-                // ব্রেকিং নিউজ আপডেট
-                const ticker = document.getElementById('breaking-news-box');
-                ticker.innerHTML = `<div class="ticker-text">${data.slice(0, 5).map(n => `<span><i class="fas fa-bolt"></i> ${n.title}</span>`).join('')}</div>`;
-            }
+        if (error) {
+            console.error('Error fetching news:', error);
+            if(container) container.innerHTML = "তথ্য লোড করতে সমস্যা হয়েছে।";
+            return;
         }
 
-        // ৩. ভিডিও লোড করার ফাংশন
-        async function fetchVideos() {
-            const { data } = await supabaseClient.from('videos').select('*').limit(8);
-            if (data) {
-                document.getElementById('video-container').innerHTML = data.map(v => `
-                    <div>
-                        <div class="video-container">
-                            <iframe src="${v.video_url}" allowfullscreen></iframe>
-                        </div>
-                        <p style="margin-top:8px; font-size:14px;">${v.caption}</p>
+        if (data && container) {
+            // মূল নিউজ সেকশন আপডেট
+            container.innerHTML = data.map(news => `
+                <div class="news-card">
+                    <a href="news-details.html?id=${news.id}">
+                        <img src="${news.image_url || 'https://via.placeholder.com/400x200'}" alt="News">
+                    </a>
+                    <div class="news-card-content">
+                        <span class="news-tag">${news.category}</span>
+                        
+                        <a href="news-details.html?id=${news.id}" style="text-decoration:none; color:inherit;">
+                            <h3 style="cursor:pointer; margin-top:10px; transition: 0.2s;">${news.title}</h3>
+                        </a>
+                        
+                        <p style="font-size:14px; color:#64748b; margin-top:10px;">
+                            ${news.description ? news.description.substring(0, 100) : ''}...
+                        </p>
                     </div>
-                `).join('');
+                </div>
+            `).join('');
+            
+            // ৩. ব্রেকিং নিউজ আপডেট (লিঙ্ক সহ)
+            const ticker = document.getElementById('breaking-news-box');
+            if (ticker) {
+                ticker.innerHTML = `
+                    <div class="ticker-text">
+                        ${data.slice(0, 5).map(n => `
+                            <a href="news-details.html?id=${n.id}" style="text-decoration:none; color:inherit; margin-right:20px;">
+                                <span><i class="fas fa-bolt"></i> ${n.title}</span>
+                            </a>
+                        `).join('')}
+                    </div>`;
             }
         }
+    }
 
-        // ৪. মতামত লোড
-        async function fetchOpinions() {
-            const { data } = await supabaseClient.from('opinions').select('*');
-            if (data) {
-                document.getElementById('opinion-container').innerHTML = data.map(o => `
-                    <div class="swiper-slide opinion-card"><img src="${o.image_url}"></div>
-                `).join('');
-                
-                new Swiper(".opSwiper", {
-                    slidesPerView: "auto",
-                    spaceBetween: 20,
-                    loop: true,
-                    autoplay: { delay: 3000 }
-                });
-            }
+    // ৪. ভিডিও লোড করার ফাংশন
+    async function fetchVideos() {
+        const videoBox = document.getElementById('video-container');
+        const { data, error } = await supabaseClient.from('videos').select('*').limit(8);
+        
+        if (data && videoBox) {
+            videoBox.innerHTML = data.map(v => `
+                <div>
+                    <div class="video-container">
+                        <iframe src="${v.video_url}" allowfullscreen></iframe>
+                    </div>
+                    <p style="margin-top:8px; font-size:14px; font-weight:600;">${v.caption}</p>
+                </div>
+            `).join('');
         }
+    }
 
-        // সব ডেটা লোড শুরু
-        window.onload = () => {
-            fetchNews();
-            fetchVideos();
-            fetchOpinions();
-        };
-    </script>
+    // ৫. মতামত লোড
+    async function fetchOpinions() {
+        const opBox = document.getElementById('opinion-container');
+        const { data, error } = await supabaseClient.from('opinions').select('*');
+        
+        if (data && opBox) {
+            opBox.innerHTML = data.map(o => `
+                <div class="swiper-slide opinion-card">
+                    <img src="${o.image_url}" style="width:100%; border-radius:10px;">
+                </div>
+            `).join('');
+            
+            // Swiper স্লাইডার সক্রিয় করা
+            new Swiper(".opSwiper", {
+                slidesPerView: "auto",
+                spaceBetween: 20,
+                loop: true,
+                autoplay: { delay: 3000 }
+            });
+        }
+    }
+
+    // ৬. সব ডেটা লোড শুরু
+    window.onload = () => {
+        fetchNews();
+        fetchVideos();
+        fetchOpinions();
+    };
+</script>
 </body>
 
 </html>
+
 
 
 
