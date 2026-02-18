@@ -161,32 +161,46 @@
     }
 
     // সংবাদ সেভ ফাংশন
-    async function publishNews() {
-        const btn = document.getElementById('save-news');
-        const title = document.getElementById('n-title').value;
-        const category = document.getElementById('n-cat').value;
-        const image_url = document.getElementById('n-img').value;
-        const content = document.getElementById('n-body').value;
+    async function submitNews() {
+    const btn = document.getElementById('save-news'); // আপনার বাটনের আইডি অনুযায়ী নিশ্চিত হোন
+    const title = document.getElementById('n-title').value;
+    const category = document.getElementById('n-cat').value;
+    const image_url = document.getElementById('n-img').value;
+    const content = document.getElementById('n-body').value;
 
-        // অতিরিক্ত কন্টেন্ট সংগ্রহ
-        const extraImgs = Array.from(document.querySelectorAll('.ex-img')).map(i => i.value);
-        const extraDescs = Array.from(document.querySelectorAll('.ex-desc')).map(d => d.value);
+    // অতিরিক্ত ছবি ও বর্ণনার ইনপুটগুলো থেকে ডাটা সংগ্রহ
+    const extraImgs = Array.from(document.querySelectorAll('.ex-img')).map(i => i.value).filter(val => val !== "");
+    const extraDescs = Array.from(document.querySelectorAll('.ex-desc')).map(d => d.value).filter(val => val !== "");
 
-        if(!title || !image_url || !content) return alert("তথ্য অসম্পূর্ণ!");
+    if(!title || !image_url || !content) return alert("দয়া করে শিরোনাম, ছবি এবং বর্ণনা প্রদান করুন।");
 
-        btn.disabled = true; btn.innerText = "সেভ হচ্ছে...";
+    btn.disabled = true; 
+    btn.innerText = "সেভ হচ্ছে...";
 
+    try {
         const { error } = await client.from('news_portal').insert([{
-            title, category, image_url, content,
-            extra_images: extraImgs,
-            extra_descriptions: extraDescs
+            title: title, 
+            category: category, 
+            image_url: image_url, 
+            content: content,
+            extra_images: extraImgs,       // এখন এটি ডাটাবেজের কলামের সাথে মিলবে
+            extra_descriptions: extraDescs  // এখন এটি ডাটাবেজের কলামের সাথে মিলবে
         }]);
 
-        if(!error) { alert("সফলভাবে পোস্ট হয়েছে!"); location.reload(); }
-        else { alert("Error: " + error.message); }
+        if (error) {
+            console.error("Supabase Error:", error);
+            alert("ত্রুটি: " + error.message);
+        } else {
+            alert("সংবাদটি সফলভাবে প্রকাশিত হয়েছে!");
+            location.reload(); 
+        }
+    } catch (err) {
+        alert("কানেকশন এরর! আবার চেষ্টা করুন।");
+    } finally {
         btn.disabled = false;
+        btn.innerText = "সংবাদ প্রকাশ করুন";
     }
-
+}
     // প্রিভিউ ডাটা লোড
     async function fetchNews() {
         const { data } = await client.from('news_portal').select('*').order('id', {ascending: false});
@@ -211,3 +225,4 @@
 </script>
 </body>
 </html>
+
