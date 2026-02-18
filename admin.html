@@ -3,186 +3,242 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel | Adi Sonaton TV</title>
+    <title>Adi Sonaton TV | Dashboard</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
-        :root { --blue: #1e3c72; --red: #e12229; --gray: #f4f7f6; }
+        :root {
+            --sidebar-bg: #1e293b;
+            --primary-color: #3b82f6;
+            --accent-red: #ef4444;
+            --text-light: #f8fafc;
+            --bg-gray: #f1f5f9;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Hind Siliguri', sans-serif; }
-        
-        /* পাসওয়ার্ড প্রোটেকশন স্ক্রিন */
-        #login-overlay { position: fixed; inset: 0; background: var(--blue); z-index: 10000; display: flex; align-items: center; justify-content: center; flex-direction: column; color: white; }
-        .login-box { background: white; padding: 30px; border-radius: 10px; color: #333; text-align: center; width: 300px; }
-        
-        body { background: var(--gray); display: flex; min-height: 100vh; }
-        .sidebar { width: 260px; background: var(--blue); color: #fff; padding: 20px; position: fixed; height: 100vh; }
-        .sidebar h2 { margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 10px; }
-        .sidebar button { width: 100%; padding: 12px; margin-bottom: 10px; border: none; background: rgba(255,255,255,0.1); color: #fff; cursor: pointer; text-align: left; border-radius: 5px; font-weight: 600; font-size: 16px; }
-        .sidebar button:hover { background: var(--red); }
+        body { background-color: var(--bg-gray); display: flex; min-height: 100vh; }
 
-        .main-content { margin-left: 260px; width: calc(100% - 260px); padding: 30px; }
-        .section { background: #fff; padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: none; }
-        .active { display: block; }
+        /* Login Screen */
+        #login-overlay { position: fixed; inset: 0; background: #0f172a; z-index: 10000; display: flex; align-items: center; justify-content: center; }
+        .login-card { background: white; padding: 40px; border-radius: 16px; width: 350px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: center; }
+        .login-card h2 { margin-bottom: 20px; color: var(--sidebar-bg); }
 
-        input, select, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; }
-        .btn-add { background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-bottom: 15px; }
-        .btn-submit { background: var(--blue); color: white; padding: 15px 30px; border: none; border-radius: 5px; width: 100%; font-weight: 700; cursor: pointer; }
+        /* Sidebar Design */
+        .sidebar { width: 280px; background: var(--sidebar-bg); color: var(--text-light); height: 100vh; position: fixed; padding: 30px 20px; }
+        .sidebar h2 { font-size: 22px; margin-bottom: 40px; text-align: center; color: var(--primary-color); }
+        .nav-btn { width: 100%; padding: 14px 18px; margin-bottom: 12px; border: none; background: transparent; color: #94a3b8; text-align: left; border-radius: 12px; cursor: pointer; transition: 0.3s; font-size: 16px; font-weight: 600; }
+        .nav-btn i { margin-right: 12px; }
+        .nav-btn:hover, .nav-btn.active { background: #334155; color: white; }
+        .nav-btn.active { border-left: 4px solid var(--primary-color); }
+
+        /* Main Content area */
+        .main-content { margin-left: 280px; width: calc(100% - 280px); padding: 40px; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .section-card { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); display: none; }
+        .section-card.active { display: block; animation: fadeIn 0.5s ease; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Forms & Inputs */
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #475569; }
+        input, select, textarea { width: 100%; padding: 12px 16px; margin-bottom: 20px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 15px; outline: none; transition: 0.2s; }
+        input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+
+        .btn-primary { background: var(--primary-color); color: white; border: none; padding: 14px 28px; border-radius: 10px; cursor: pointer; font-weight: 700; width: 100%; font-size: 16px; }
+        .btn-add-more { background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-bottom: 20px; font-size: 14px; }
         
-        .dynamic-row { background: #f9f9f9; padding: 15px; border: 1px dashed #bbb; margin-bottom: 10px; position: relative; border-radius: 5px; }
-        .btn-remove { background: var(--red); color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; position: absolute; top: 10px; right: 10px; }
+        /* Dynamic Row Style */
+        .extra-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; margin-bottom: 15px; position: relative; }
+        .btn-remove { position: absolute; top: 10px; right: 10px; color: var(--accent-red); cursor: pointer; background: none; border: none; font-size: 18px; }
 
-        .list-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #ddd; align-items: center; }
-        .list-item img { width: 60px; border-radius: 5px; }
+        /* Item List UI */
+        .item-list { margin-top: 30px; }
+        .data-row { display: flex; align-items: center; background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; justify-content: space-between; }
+        .data-row img { width: 60px; height: 45px; object-fit: cover; border-radius: 6px; margin-right: 15px; }
+        .del-icon { color: var(--accent-red); cursor: pointer; font-size: 18px; }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 80px; padding: 20px 10px; }
+            .sidebar h2, .nav-btn span { display: none; }
+            .main-content { margin-left: 80px; width: calc(100% - 80px); }
+        }
     </style>
 </head>
 <body>
 
 <div id="login-overlay">
-    <div class="login-box">
-        <h3>এডমিন লগইন</h3><br>
-        <input type="password" id="admin-pass" placeholder="পাসওয়ার্ড দিন">
-        <button class="btn-submit" onclick="checkPass()">প্রবেশ করুন</button>
+    <div class="login-card">
+        <i class="fas fa-user-shield" style="font-size: 50px; color: var(--primary-color); margin-bottom: 15px;"></i>
+        <h2>অ্যাডমিন লগইন</h2>
+        <input type="password" id="pass-field" placeholder="পাসওয়ার্ড লিখুন...">
+        <button class="btn-primary" onclick="verifyAdmin()">প্রবেশ করুন</button>
     </div>
 </div>
 
 <div class="sidebar">
-    <h2>Adi Sonaton TV</h2>
-    <button onclick="showSec('news-sec')">📰 নিউজ আপলোড</button>
-    <button onclick="showSec('video-sec')">🎥 ভিডিও গ্যালারি</button>
-    <button onclick="showSec('opinion-sec')">✍️ মতামত স্লাইডার</button>
-    <button onclick="location.href='index.html'" style="margin-top:50px; background:#000;">🏠 হোমপেজ</button>
+    <h2>Adi Sonaton Dashboard</h2>
+    <button class="nav-btn active" onclick="switchTab('news-tab', this)"><i class="fas fa-newspaper"></i> <span>নিউজ পোস্ট</span></button>
+    <button class="nav-btn" onclick="switchTab('video-tab', this)"><i class="fas fa-video"></i> <span>ভিডিও গ্যালারি</span></button>
+    <button class="nav-btn" onclick="switchTab('opinion-tab', this)"><i class="fas fa-comments"></i> <span>মতামত স্লাইডার</span></button>
+    <button class="nav-btn" onclick="window.location.href='index.html'" style="margin-top: 40px;"><i class="fas fa-external-link-alt"></i> <span>ওয়েবসাইট দেখুন</span></button>
 </div>
 
 <div class="main-content">
-    <div id="news-sec" class="section active">
-        <h3>📰 নতুন সংবাদ পোস্ট করুন</h3>
-        <input type="text" id="news-title" placeholder="সংবাদের শিরোনাম">
-        <select id="news-cat">
+    <div class="header-top">
+        <h1 id="page-title">নিউজ ম্যানেজমেন্ট</h1>
+        <div style="font-weight: 600; color: #64748b;">স্বাগতম, অ্যাডমিন</div>
+    </div>
+
+    <div id="news-tab" class="section-card active">
+        <label>সংবাদের শিরোনাম</label>
+        <input type="text" id="news-title" placeholder="এখানে শিরোনাম লিখুন...">
+
+        <label>ক্যাটাগরি সিলেক্ট করুন</label>
+        <select id="news-category">
             <option value="bangladesh">বাংলাদেশ</option>
             <option value="national">জাতীয়</option>
             <option value="international">আন্তর্জাতিক</option>
+            <option value="sports">খেলা</option>
+            <option value="entertainment">বিনোদন</option>
+            <option value="tech-health">প্রযুক্তি ও চিকিৎসা</option>
+            <option value="opinion">মতামত</option>
+            <option value="organization">সংগঠন</option>
+            <option value="education">শিক্ষা</option>
+            <option value="theology">ধর্মতত্ব</option>
+            <option value="festivals">পূজাপার্বণ</option>
+            <option value="foundation">হিন্দু ফাউন্ডেশন</option>
         </select>
-        <input type="text" id="news-main-img" placeholder="প্রধান ছবির লিঙ্ক (Direct URL)">
-        <textarea id="news-desc" rows="4" placeholder="প্রধান ডেসক্রিপশন..."></textarea>
+
+        <label>প্রধান ছবির লিঙ্ক (Image URL)</label>
+        <input type="text" id="news-img" placeholder="https://example.com/image.jpg">
+
+        <label>বিস্তারিত সংবাদ বর্ণনা</label>
+        <textarea id="news-content" rows="6" placeholder="সংবাদটি এখানে লিখুন..."></textarea>
+
+        <div id="dynamic-fields"></div>
+        <button class="btn-add-more" onclick="addNewField()"><i class="fas fa-plus"></i> অতিরিক্ত ছবি ও বর্ণনা যোগ করুন</button>
+
+        <button class="btn-primary" onclick="postNews()">সংবাদ প্রকাশ করুন</button>
         
-        <div id="extra-content"></div>
-        <button class="btn-add" onclick="addMoreContent()">+ আরো ছবি ও বর্ণনা যুক্ত করুন</button>
-        
-        <button class="btn-submit" onclick="saveNews()">প্রকাশ করুন</button>
-        <hr><br>
-        <div id="news-list"></div>
+        <div class="item-list" id="recent-news-list"></div>
     </div>
 
-    <div id="video-sec" class="section">
-        <h3>🎥 ভিডিও ম্যানেজমেন্ট (৬টি)</h3>
-        <input type="text" id="vid-url" placeholder="YouTube Embed লিঙ্ক (src)">
-        <input type="text" id="vid-cap" placeholder="ভিডিও শিরোনাম">
-        <button class="btn-submit" onclick="saveVideo()">ভিডিও সেভ করুন</button>
-        <br><br>
-        <div id="video-list"></div>
+    <div id="video-tab" class="section-card">
+        <h3>ভিডিও আপলোড (YouTube Embed)</h3><br>
+        <input type="text" id="v-url" placeholder="YouTube Video Embed URL (src)">
+        <input type="text" id="v-cap" placeholder="ভিডিওর টাইটেল">
+        <button class="btn-primary" onclick="postVideo()">ভিডিও যুক্ত করুন</button>
+        <div id="admin-video-list" class="item-list"></div>
     </div>
 
-    <div id="opinion-sec" class="section">
-        <h3>✍️ মতামত স্লাইডার (১০-১৫ ছবি)</h3>
-        <input type="text" id="op-img" placeholder="ছবির লিঙ্ক (URL)">
-        <button class="btn-submit" onclick="saveOpinion()">স্লাইডারে যুক্ত করুন</button>
-        <br><br>
-        <div id="opinion-list"></div>
+    <div id="opinion-tab" class="section-card">
+        <h3>মতামত স্লাইডার ইমেজ</h3><br>
+        <input type="text" id="o-img" placeholder="ছবির সরাসরি লিঙ্ক দিন">
+        <button class="btn-primary" onclick="postOpinion()">স্লাইডারে যোগ করুন</button>
+        <div id="admin-opinion-list" class="item-list"></div>
     </div>
 </div>
 
 <script>
     const SUPABASE_URL = 'https://vplqtnrziptqeeusdabv.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwbHF0bnJ6aXB0cWVldXNkYWJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwNDU1NDIsImV4cCI6MjA4NjYyMTU0Mn0.yMs0N0dMIImliu6PscOeKh_gYlvl184AESug-LVDKok';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // পাসওয়ার্ড চেক (আপনি এখানে আপনার পাসওয়ার্ড সেট করতে পারেন)
-    function checkPass() {
-        const pass = document.getElementById('admin-pass').value;
-        if(pass === "sonaton2026") { // আপনার পাসওয়ার্ড এখানে দিন
+    // পাসওয়ার্ড ভেরিফিকেশন
+    function verifyAdmin() {
+        if(document.getElementById('pass-field').value === "sonaton2026") {
             document.getElementById('login-overlay').style.display = 'none';
         } else {
             alert("ভুল পাসওয়ার্ড!");
         }
     }
 
-    function showSec(id) {
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        if(id === 'news-sec') loadNews();
-        if(id === 'video-sec') loadVideos();
-        if(id === 'opinion-sec') loadOpinions();
+    // ট্যাব সুইচিং
+    function switchTab(tabId, btn) {
+        document.querySelectorAll('.section-card').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        btn.classList.add('active');
+        document.getElementById('page-title').innerText = btn.innerText;
+
+        if(tabId === 'news-tab') fetchNews();
+        if(tabId === 'video-tab') fetchVideos();
+        if(tabId === 'opinion-tab') fetchOpinions();
     }
 
-    // নিউজ এর ভেতর ডাইনামিক ফিল্ড
-    function addMoreContent() {
-        const div = document.createElement('div');
-        div.className = 'dynamic-row';
-        div.innerHTML = `
-            <button class="btn-remove" onclick="this.parentElement.remove()">X</button>
-            <input type="text" class="extra-img" placeholder="অতিরিক্ত ছবির লিঙ্ক">
-            <textarea class="extra-desc" rows="2" placeholder="এই ছবির বর্ণনা..."></textarea>
+    // ডাইনামিক ফিল্ড যুক্ত করা
+    function addNewField() {
+        const container = document.getElementById('dynamic-fields');
+        const id = Date.now();
+        const html = `
+            <div class="extra-box" id="box-${id}">
+                <button class="btn-remove" onclick="document.getElementById('box-${id}').remove()"><i class="fas fa-times-circle"></i></button>
+                <label>অতিরিক্ত ছবির লিঙ্ক</label>
+                <input type="text" class="ex-img" placeholder="Image URL">
+                <label>ছবির বর্ণনা</label>
+                <textarea class="ex-desc" rows="2" placeholder="বর্ণনা..."></textarea>
+            </div>
         `;
-        document.getElementById('extra-content').appendChild(div);
+        container.insertAdjacentHTML('beforeend', html);
     }
 
-    // নিউজ সেভ
-    async function saveNews() {
+    // ডাটাবেজে সংবাদ পাঠানো
+    async function postNews() {
         const title = document.getElementById('news-title').value;
-        const category = document.getElementById('news-cat').value;
-        const image_url = document.getElementById('news-main-img').value;
-        const content = document.getElementById('news-desc').value;
+        const cat = document.getElementById('news-category').value;
+        const img = document.getElementById('news-img').value;
+        const body = document.getElementById('news-content').value;
 
-        // এক্সট্রা ছবি ও লেখাগুলো অ্যারে তে নেওয়া
-        const extraImgs = Array.from(document.querySelectorAll('.extra-img')).map(i => i.value);
-        const extraDescs = Array.from(document.querySelectorAll('.extra-desc')).map(d => d.value);
+        const exImgs = Array.from(document.querySelectorAll('.ex-img')).map(i => i.value);
+        const exDescs = Array.from(document.querySelectorAll('.ex-desc')).map(d => d.value);
 
-        const { error } = await supabaseClient.from('news_portal').insert([{ 
-            title, category, image_url, content,
-            extra_images: extraImgs,
-            extra_descriptions: extraDescs
+        const { error } = await client.from('news_portal').insert([{
+            title, category: cat, image_url: img, content: body,
+            extra_images: exImgs, extra_descriptions: exDescs
         }]);
 
-        if(!error) { alert("পোস্ট হয়েছে!"); location.reload(); }
+        if(!error) { alert("সফলভাবে পোস্ট হয়েছে!"); location.reload(); }
     }
 
-    // ভিডিও সেভ
-    async function saveVideo() {
-        const video_url = document.getElementById('vid-url').value;
-        const caption = document.getElementById('vid-cap').value;
-        const { error } = await supabaseClient.from('videos').insert([{ video_url, caption }]);
-        if(!error) { alert("ভিডিও যুক্ত হয়েছে!"); loadVideos(); }
-    }
-
-    // মতামত সেভ
-    async function saveOpinion() {
-        const image_url = document.getElementById('op-img').value;
-        const { error } = await supabaseClient.from('opinions').insert([{ image_url }]);
-        if(!error) { alert("মতামত যুক্ত হয়েছে!"); loadOpinions(); }
-    }
-
-    // ডাটা লোড ও ডিলিট ফাংশন (সংক্ষেপে)
-    async function loadNews() {
-        const { data } = await supabaseClient.from('news_portal').select('*').order('id', {ascending: false});
-        document.getElementById('news-list').innerHTML = data.map(n => `<div class="list-item"><span>${n.title}</span> <button class="btn-remove" onclick="del('news_portal',${n.id})">Del</button></div>`).join('');
-    }
-    async function loadVideos() {
-        const { data } = await supabaseClient.from('videos').select('*');
-        document.getElementById('video-list').innerHTML = data.map(v => `<div class="list-item"><span>${v.caption}</span> <button class="btn-remove" onclick="del('videos',${v.id})">Del</button></div>`).join('');
-    }
-    async function loadOpinions() {
-        const { data } = await supabaseClient.from('opinions').select('*');
-        document.getElementById('opinion-list').innerHTML = data.map(o => `<div class="list-item"><img src="${o.image_url}"> <button class="btn-remove" onclick="del('opinions',${o.id})">Del</button></div>`).join('');
-    }
-
-    async function del(table, id) {
-        if(confirm('মুছে ফেলবেন?')) {
-            await supabaseClient.from(table).delete().eq('id', id);
+    // ডাটা ডিলিট ফাংশন (গ্লোবাল)
+    async function deleteItem(table, id) {
+        if(confirm("আপনি কি নিশ্চিত এটি ডিলিট করতে চান?")) {
+            await client.from(table).delete().eq('id', id);
             location.reload();
         }
     }
 
-    window.onload = loadNews;
+    // নিউজ লিস্ট লোড
+    async function fetchNews() {
+        const { data } = await client.from('news_portal').select('*').order('id', {ascending: false});
+        document.getElementById('recent-news-list').innerHTML = data.map(n => `
+            <div class="data-row">
+                <div style="display:flex; align-items:center;">
+                    <img src="${n.image_url}"> <span>${n.title}</span>
+                </div>
+                <i class="fas fa-trash del-icon" onclick="deleteItem('news_portal', ${n.id})"></i>
+            </div>
+        `).join('');
+    }
+
+    // ভিডিও ও মতামত লোড (একইভাবে)
+    async function postVideo() {
+        const url = document.getElementById('v-url').value;
+        const cap = document.getElementById('v-cap').value;
+        await client.from('videos').insert([{ video_url: url, caption: cap }]);
+        location.reload();
+    }
+
+    async function postOpinion() {
+        const img = document.getElementById('o-img').value;
+        await client.from('opinions').insert([{ image_url: img }]);
+        location.reload();
+    }
+
+    window.onload = fetchNews;
 </script>
 </body>
 </html>
