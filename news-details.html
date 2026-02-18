@@ -16,31 +16,34 @@
         body { background: #f8fafc; color: #333; line-height: 1.8; }
         .container { max-width: 850px; margin: 0 auto; padding: 20px; }
         
-        .back-btn { display: inline-block; margin-bottom: 20px; color: var(--primary-blue); text-decoration: none; font-weight: bold; transition: 0.3s; }
-        .back-btn:hover { color: var(--red); }
+        .back-btn { display: inline-block; margin-bottom: 20px; color: var(--primary-blue); text-decoration: none; font-weight: bold; }
         
-        .news-details-card { background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .news-details-card { background: #fff; padding: 25px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
         
-        /* ছবির স্টাইল */
-        .main-img { width: 100%; height: auto; border-radius: 10px; margin-bottom: 25px; display: block; }
-        .extra-img { width: 100%; height: auto; border-radius: 10px; margin-top: 20px; margin-bottom: 20px; display: block; border: 1px solid #eee; }
+        /* ইমেজ ও ক্যাপশন স্টাইল */
+        .img-box { margin-bottom: 30px; }
+        .main-img, .extra-img { width: 100%; height: auto; border-radius: 10px; display: block; }
+        .caption-text { 
+            background: #f1f5f9; 
+            padding: 10px 15px; 
+            border-left: 4px solid var(--primary-blue); 
+            margin-top: 10px; 
+            font-size: 16px; 
+            color: #475569; 
+            font-style: italic;
+        }
         
         .news-category { display: inline-block; background: var(--red); color: #fff; padding: 4px 12px; border-radius: 5px; font-size: 14px; margin-bottom: 15px; }
-        .news-title { font-size: clamp(24px, 5vw, 32px); color: #1e293b; line-height: 1.3; margin-bottom: 20px; font-weight: 700; }
-        .news-content { font-size: 18px; color: #475569; white-space: pre-wrap; text-align: justify; margin-bottom: 30px; }
+        .news-title { font-size: 28px; color: #1e293b; margin-bottom: 20px; font-weight: 700; line-height: 1.4; }
+        .news-content { font-size: 18px; color: #334155; white-space: pre-wrap; margin-bottom: 30px; text-align: justify; }
 
-        #loading-msg { text-align: center; padding: 100px; font-size: 20px; color: #666; }
-        
-        @media (max-width: 600px) {
-            .news-details-card { padding: 15px; }
-            .news-title { font-size: 22px; }
-        }
+        #loading-msg { text-align: center; padding: 50px; font-size: 20px; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> হোমপেজে ফিরে যান</a>
+        <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> ফিরে যান</a>
         
         <div id="news-content-area">
             <div id="loading-msg">সংবাদটি লোড হচ্ছে...</div>
@@ -48,12 +51,10 @@
     </div>
 
     <script>
-        // ১. SUPABASE কানেকশন
         const SUPABASE_URL = 'https://vplqtnrziptqeeusdabv.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwbHF0bnJ6aXB0cWVldXNkYWJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwNDU1NDIsImV4cCI6MjA4NjYyMTU0Mn0.yMs0N0dMIImliu6PscOeKh_gYlvl184AESug-LVDKok';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // ২. URL থেকে আইডি নেওয়া
         const params = new URLSearchParams(window.location.search);
         const newsId = params.get('id');
 
@@ -61,11 +62,10 @@
             const contentArea = document.getElementById('news-content-area');
 
             if (!newsId) {
-                contentArea.innerHTML = "<div id='loading-msg'>দুঃখিত, কোনো সংবাদ পাওয়া যায়নি।</div>";
+                contentArea.innerHTML = "সংবাদ পাওয়া যায়নি।";
                 return;
             }
 
-            // ৩. ডাটাবেজ থেকে তথ্য আনা
             const { data, error } = await supabaseClient
                 .from('news_portal')
                 .select('*')
@@ -73,28 +73,42 @@
                 .single();
 
             if (error || !data) {
-                console.error('Error:', error);
-                contentArea.innerHTML = "<div id='loading-msg'>সংবাদটি লোড করতে সমস্যা হয়েছে।</div>";
+                contentArea.innerHTML = "সংবাদ লোড করতে সমস্যা হয়েছে।";
                 return;
             }
 
-            // ৪. পেজে ডাটা দেখানো (বাড়তি ছবিসহ)
+            // ডাইনামিক ইমেজ ও ক্যাপশন তৈরি করার ফাংশন
+            let extraSections = '';
+            for (let i = 2; i <= 5; i++) {
+                const imgUrl = data[`image_url_${i}`];
+                const caption = data[`caption_${i}`];
+                
+                if (imgUrl) {
+                    extraSections += `
+                        <div class="img-box">
+                            <img src="${imgUrl}" class="extra-img">
+                            ${caption ? `<div class="caption-text">${caption}</div>` : ''}
+                        </div>
+                    `;
+                }
+            }
+
             contentArea.innerHTML = `
                 <div class="news-details-card">
                     <span class="news-category">${data.category}</span>
                     <h1 class="news-title">${data.title}</h1>
                     
-                    <img src="${data.image_url || 'https://via.placeholder.com/800x400'}" class="main-img" alt="Main News Image">
+                    <div class="img-box">
+                        <img src="${data.image_url}" class="main-img">
+                    </div>
                     
                     <div class="news-content">${data.description}</div>
 
-                    ${data.image_url_2 ? `<img src="${data.image_url_2}" class="extra-img" alt="Additional Image 1">` : ''}
-                    
-                    ${data.image_url_3 ? `<img src="${data.image_url_3}" class="extra-img" alt="Additional Image 2">` : ''}
+                    ${extraSections}
                 </div>
             `;
             
-            document.title = data.title + " | Adi Sonaton TV";
+            document.title = data.title;
         }
 
         window.onload = fetchNewsDetails;
