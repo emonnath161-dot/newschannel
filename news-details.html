@@ -3,73 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>বিস্তারিত সংবাদ | Adi Sonaton TV</title>
+    <title>সংবাদের বিস্তারিত | Adi Sonaton TV</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
-        body { font-family: 'Hind Siliguri', sans-serif; background: #f9f9f9; margin: 0; padding: 0; line-height: 1.6; }
-        .container { max-width: 800px; margin: 30px auto; background: #fff; padding: 25px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
-        .back-btn { display: inline-block; margin-bottom: 20px; color: #1e3c72; text-decoration: none; font-weight: bold; }
-        .news-title { font-size: clamp(24px, 5vw, 36px); color: #111; line-height: 1.3; margin-bottom: 15px; }
-        .news-meta { color: #666; font-size: 14px; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        .news-img { width: 100%; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .news-desc { font-size: 18px; color: #333; white-space: pre-line; text-align: justify; }
-        @media (max-width: 600px) { .container { margin: 10px; padding: 15px; } }
+        :root { --primary-blue: #1e3c72; --red: #e12229; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Hind Siliguri', sans-serif; }
+        body { background: #f8fafc; color: #333; line-height: 1.8; }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        
+        .back-btn { display: inline-block; margin-bottom: 20px; color: var(--primary-blue); text-decoration: none; font-weight: bold; }
+        
+        .news-details-card { background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .news-details-card img { width: 100%; height: auto; border-radius: 10px; margin-bottom: 25px; }
+        .news-category { display: inline-block; background: var(--red); color: #fff; padding: 4px 12px; border-radius: 5px; font-size: 14px; margin-bottom: 15px; }
+        .news-title { font-size: 32px; color: #1e293b; line-height: 1.3; margin-bottom: 20px; }
+        .news-content { font-size: 18px; color: #475569; white-space: pre-wrap; text-align: justify; }
+
+        #loading-msg { text-align: center; padding: 100px; font-size: 20px; color: #666; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <a href="javascript:history.back()" class="back-btn">← ফিরে যান</a>
-    
-    <div id="loader" style="text-align:center; padding: 50px;">লোড হচ্ছে...</div>
-    
-    <div id="news-content" style="display:none;">
-        <h1 class="news-title" id="title"></h1>
-        <div class="news-meta">
-            বিভাগ: <span id="category" style="font-weight:bold; color:#e12229;"></span>
+    <div class="container">
+        <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> ফিরে যান</a>
+        
+        <div id="news-content-area">
+            <div id="loading-msg">সংবাদটি লোড হচ্ছে...</div>
         </div>
-        <img src="" id="image" class="news-img" alt="News Image">
-        <div class="news-desc" id="description"></div>
     </div>
-</div>
 
-<script>
-    // আপনার Supabase তথ্য বসান
-    const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-    const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    <script>
+        // ১. SUPABASE কানেকশন (আপনার নিজের URL ও Key ব্যবহার করুন)
+        const SUPABASE_URL = 'https://vplqtnrziptqeeusdabv.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwbHF0bnJ6aXB0cWVldXNkYWJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwNDU1NDIsImV4cCI6MjA4NjYyMTU0Mn0.yMs0N0dMIImliu6PscOeKh_gYlvl184AESug-LVDKok';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // URL থেকে আইডি (ID) নেওয়া
-    const urlParams = new URLSearchParams(window.location.search);
-    const newsId = urlParams.get('id');
+        // ২. URL থেকে আইডেন্টিফায়ার (ID) নেওয়া
+        const params = new URLSearchParams(window.location.search);
+        const newsId = params.get('id');
 
-    async function loadFullNews() {
-        if (!newsId) return;
+        async function fetchNewsDetails() {
+            const contentArea = document.getElementById('news-content-area');
 
-        const { data, error } = await supabaseClient
-            .from('news_portal')
-            .select('*')
-            .eq('id', newsId)
-            .single();
+            if (!newsId) {
+                contentArea.innerHTML = "কোনো সংবাদ পাওয়া যায়নি।";
+                return;
+            }
 
-        if (data) {
-            document.getElementById('loader').style.display = 'none';
-            document.getElementById('news-content').style.display = 'block';
+            // ৩. আইডি দিয়ে স্পেসিফিক নিউজ ডাটা আনা
+            const { data, error } = await supabaseClient
+                .from('news_portal')
+                .select('*')
+                .eq('id', newsId)
+                .single(); // শুধুমাত্র একটি রো বা সারি আনবে
+
+            if (error || !data) {
+                console.error('Error:', error);
+                contentArea.innerHTML = "সংবাদটি খুঁজে পাওয়া যায়নি বা ডাটাবেজ সমস্যা।";
+                return;
+            }
+
+            // ৪. পেজে ডাটা দেখানো
+            contentArea.innerHTML = `
+                <div class="news-details-card">
+                    <span class="news-category">${data.category}</span>
+                    <h1 class="news-title">${data.title}</h1>
+                    <img src="${data.image_url || 'https://via.placeholder.com/800x400'}" alt="News Image">
+                    <div class="news-content">${data.description}</div>
+                </div>
+            `;
             
-            document.getElementById('title').innerText = data.title;
-            document.getElementById('category').innerText = data.category;
-            document.getElementById('image').src = data.image_url;
-            document.getElementById('description').innerText = data.description;
-            
-            // ব্রাউজার ট্যাব টাইটেল পরিবর্তন
+            // ব্রাউজারের টাইটেল পরিবর্তন
             document.title = data.title + " | Adi Sonaton TV";
-        } else {
-            document.getElementById('loader').innerText = "সংবাদটি পাওয়া যায়নি!";
         }
-    }
 
-    loadFullNews();
-</script>
+        // পেজ লোড হলে ফাংশন রান করবে
+        window.onload = fetchNewsDetails;
+    </script>
 </body>
 </html>
